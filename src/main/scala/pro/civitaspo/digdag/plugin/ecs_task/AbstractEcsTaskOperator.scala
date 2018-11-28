@@ -1,6 +1,6 @@
 package pro.civitaspo.digdag.plugin.ecs_task
 import io.digdag.client.config.{Config, ConfigFactory}
-import io.digdag.spi.{OperatorContext, SecretProvider, TemplateEngine}
+import io.digdag.spi.{OperatorContext, SecretProvider, TaskResult, TemplateEngine}
 import io.digdag.util.{BaseOperator, DurationParam}
 import org.slf4j.{Logger, LoggerFactory}
 import pro.civitaspo.digdag.plugin.ecs_task.aws.{Aws, AwsConf}
@@ -43,4 +43,8 @@ abstract class AbstractEcsTaskOperator(operatorName: String, context: OperatorCo
     )
   )
 
+  override def run(): TaskResult = {
+    try super.run()
+    finally aws.destroyConnections()
+  }
 }
