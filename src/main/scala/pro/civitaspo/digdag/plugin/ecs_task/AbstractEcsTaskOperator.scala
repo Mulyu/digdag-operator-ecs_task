@@ -42,9 +42,4 @@ abstract class AbstractEcsTaskOperator(operatorName: String, context: OperatorCo
       endpoint = params.getOptional("endpoint", classOf[String])
     )
   )
-
-  override def run(): TaskResult = {
-    try super.run()
-    finally aws.destroyConnections()
-  }
 }

@@ -14,8 +14,6 @@ import com.amazonaws.auth.{
 import com.amazonaws.auth.profile.{ProfileCredentialsProvider, ProfilesConfigFile}
 import com.amazonaws.client.builder.AwsClientBuilder
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration
-import com.amazonaws.http.IdleConnectionReaper
-import com.amazonaws.metrics.AwsSdkMetrics
 import com.amazonaws.regions.{DefaultAwsRegionProviderChain, Regions}
 import com.amazonaws.services.ecs.{AmazonECS, AmazonECSClientBuilder}
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
@@ -47,11 +45,6 @@ case class Aws(conf: AwsConf) {
     val ecs: AmazonECS = buildService(AmazonECSClientBuilder.standard())
     try f(ecs)
     finally ecs.shutdown()
-  }
-
-  def destroyConnections(): Unit = {
-    IdleConnectionReaper.shutdown()
-    AwsSdkMetrics.unregisterMetricAdminMBean()
   }
 
   private def buildService[S <: AwsClientBuilder[S, T], T](builder: AwsClientBuilder[S, T]): T = {
@@ -176,6 +169,7 @@ case class Aws(conf: AwsConf) {
     val cc = new ClientConfiguration()
       .withProxyHost(host)
       .withProtocol(protocol)
+      .withReaper(false)
 
     if (port.isPresent) cc.setProxyPort(port.get().toInt)
     if (user.isPresent) cc.setProxyUsername(user.get())
